@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>
+
+    <record id="product_category_form_view" model="ir.ui.view">
+      <field name="name">product.category.form</field>
+      <field name="model">product.category</field>
+      <field name="inherit_id" ref="product.product_category_form_view"/>
+      <field name="arch" type="xml">
+        <xpath expr="//group[@name='first']" position="after">
+          <group name="taxes" string="Taxes">
+              <group>
+                  <field name="taxes_id" widget="many2many_tags"/>
+                  <p attrs="{'invisible':[('parent_id','=',False)]}" colspan="2">
+                    The following taxes will apply to the products in this
+                    category taking into account parent categories:
+                    <field name="total_taxes_id" widget="many2many_tags"/>
+                  </p>
+              </group>
+              <group>
+                  <field name="supplier_taxes_id" widget="many2many_tags"/>
+                  <p attrs="{'invisible':[('parent_id','=',False)]}" colspan="2">
+                    The following taxes will apply to the products in this
+                    category taking into account parent categories:
+                    <field name="total_supplier_taxes_id" widget="many2many_tags"/>
+                  </p>
+              </group>
+          </group>
+        </xpath>
+      </field>
+    </record>
+
+  </data>
+</openerp>
