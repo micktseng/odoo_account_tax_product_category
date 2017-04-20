@@ -5,25 +5,23 @@ class ProductCategory(models.Model):
     _inherit = 'product.category'
     _parent_store = False
 
-    @api.one
+    @api.multi
     def _get_total_taxes(self):
-        categ = self
-        customer_taxes = categ.taxes_id
-        supplier_taxes = categ.supplier_taxes_id
-        while categ.parent_id and (not customer_taxes or not supplier_taxes):
-            categ = categ.parent_id
-            if not customer_taxes:
-                customer_taxes |= categ.taxes_id
-            if not supplier_taxes:
-                supplier_taxes |= categ.supplier_taxes_id
-        self.total_taxes_id = customer_taxes
-        self.total_supplier_taxes_id = supplier_taxes
+        for categ in self:
+            customer_taxes = categ.taxes_id
+            supplier_taxes = categ.supplier_taxes_id
+            parent_categ = categ.parent_id
+            if parent_categ:
+                customer_taxes |= parent_categ.total_taxes_id
+                supplier_taxes |= parent_categ.total_supplier_taxes_id
+            categ.total_taxes_id = customer_taxes
+            categ.total_supplier_taxes_id = supplier_taxes
 
     taxes_id = fields.Many2many('account.tax', 'product_category_taxes_rel', 'categ_id', 'tax_id', 'Customer Taxes',
-                                domain=[('type_tax_use', 'in', ['sale', 'all'])],
+                                domain=[('type_tax_use', '=', 'sale')],
                                 help="Taxes change in product category is not propagated in existing products")
     supplier_taxes_id = fields.Many2many('account.tax', 'product_category_supplier_taxes_rel', 'categ_id', 'tax_id', 'Supplier Taxes',
-                                         domain=[('type_tax_use', 'in', ['purchase', 'all'])],
+                                         domain=[('type_tax_use', '=', 'purchase')],
                                          help="Taxes change in product category is not propagated in existing products")
     total_taxes_id = fields.Many2many('account.tax', string='Inherited Customer Taxes', compute='_get_total_taxes')
     total_supplier_taxes_id = fields.Many2many('account.tax', string='Inherited Supplier Taxes', compute='_get_total_taxes')
